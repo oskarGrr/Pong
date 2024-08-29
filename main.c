@@ -85,18 +85,19 @@ int main(void)
     {
         int const endPopupResult = draw(screenW, screenH, &ball, &leftPaddle, &rightPaddle, 
             leftScore, rightScore, isGameOver);
-          
-        if(endPopupResult == -1) { break; }
-        else if(endPopupResult == 1)
-            resetGame(screenW, screenH, &ball, mid2SideAngle, &rightScore, &leftScore, &isGameOver);
         
         if( ! isGameOver )
         {
             int const updateResult = update(screenW, screenH, &ball, &leftPaddle, &rightPaddle,
                 mid2SideAngle, &rightScore, &leftScore, maxScore, &paddleHitSound, &scoreSound);
                 
-            if(updateResult != 0)
-                isGameOver = true;
+            if(updateResult != 0) { isGameOver = true; }
+        }
+        else
+        {
+            if(endPopupResult == -1) { break; }
+            else if(endPopupResult == 1)
+                resetGame(screenW, screenH, &ball, mid2SideAngle, &rightScore, &leftScore, &isGameOver);
         }
     }
     
@@ -225,7 +226,7 @@ void drawScore(int leftSideScore, int rightSideScore, int screenW)
     sprintf_s(rightScoreText, sizeof(rightScoreText), "%d", rightSideScore);
     
     float const fontSize = 50.0f;
-    Color textColor = GRAY;
+    Color textColor = (Color){200, 200, 200, 230};
     textColor.a = 190;
     
     int const leftScoreX = screenW / 5;
@@ -411,9 +412,7 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
         
             ball->direction.x = cos(PI / 180 * newAngle);
             ball->direction.y = sin(PI / 180 * newAngle);
-            
-            printf("LEFT %f\n", newAngle);
-        
+
             PlaySound(*paddleHitSound);
             
             if(ball->speed < ball->maxSpeed)
@@ -436,7 +435,6 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
                 ball->speed += ball->speedIncreaseAmount;
             
             PlaySound(*paddleHitSound);
-            printf("RIGHT %f\n", newAngle);
             
             timeElapsed = 0.0f;
         }  
