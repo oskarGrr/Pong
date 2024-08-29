@@ -26,6 +26,7 @@ typedef struct
     float speed;
     float startSpeed;
     float speedIncreaseAmount;
+    float maxSpeed;
 }Ball;
 
 int update(int screenW, int screenH, Ball* ball, Paddle* leftP, Paddle* rightP, 
@@ -322,9 +323,10 @@ void ballCtor(Ball* this, int screenW, int screenH, float const mid2SideAngle)
 {
     this->pos = (Vector2){screenW * 0.5f, screenH * 0.5f};
     this->startSpeed = 500.0f;
+    this->maxSpeed = 800.0f;
     this->speed = this->startSpeed;
     this->radius = 8.0f;
-    this->speedIncreaseAmount = 60.0f;
+    this->speedIncreaseAmount = 40.0f;
     setBallInitialDirection(this, screenW, screenH, mid2SideAngle);
 }
 
@@ -368,20 +370,33 @@ float mapRange2Range(float min0, float max0, float min1, float max1, float input
 int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle, 
     Paddle const* leftPaddle, Paddle const* rightPaddle, Sound const* paddleHitSound)
 {
-    ball->pos.x += ball->direction.x * ball->speed * GetFrameTime();
-    ball->pos.y += ball->direction.y * ball->speed * GetFrameTime();
+    float const dt = GetFrameTime();
+    ball->pos.x += ball->direction.x * ball->speed * dt;
+    ball->pos.y += ball->direction.y * ball->speed * dt;
     
+    //if the left side has scored
     if(ball->pos.x - ball->radius > screenW)
     {
         resetBall(ball, screenW, screenH, mid2SideAngle);
         return 1;
-    }
+    }//if the right side has scored
     else if(ball->pos.x + ball->radius < 0)
     {
         resetBall(ball, screenW, screenH, mid2SideAngle);
         return -1;
     }
-    
+
+    static float timeElapsed = 0.0f;
+    timeElapsed += dt;
+
+    //Wait 100 milliseconds before allowing another speed increase to the ball.
+    //This is needed because the ball sometimes gets pushed by the top or 
+    //bottom of the paddles (while the paddles are moving faster than the ball).
+    //The collision detection then keeps returning true and rapidly accelerates the ball
+    //causing it's speed to jump more than it should (ball->speedIncreaseAmount) from "one" paddle hit.
+    //I'm sure this is basically a hack to fix the problem, but it works pretty well.
+    float const speedIncreaseCooldown = 0.1f;
+
     //if we hit the floor or ceil then flip the y direction
     if(ball->pos.y + ball->radius >= screenH || ball->pos.y - ball->radius <= 0)
     {
@@ -389,27 +404,42 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
     }
     else if(ballPaddleCollision(leftPaddle, ball))
     {
-        float newAngle = mapRange2Range(0, 
+        if(timeElapsed > speedIncreaseCooldown)
+        {
+            float const newAngle = mapRange2Range(0, 
             leftPaddle->rect.height, -45, 45, ball->pos.y - leftPaddle->rect.y);
         
-        ball->direction.x = cos(PI / 180 * newAngle);
-        ball->direction.y = sin(PI / 180 * newAngle);
-        ball->speed += ball->speedIncreaseAmount;
-        printf("LEFT %f\n", newAngle);
+            ball->direction.x = cos(PI / 180 * newAngle);
+            ball->direction.y = sin(PI / 180 * newAngle);
+            
+            printf("LEFT %f\n", newAngle);
         
-        PlaySound(*paddleHitSound);
+            PlaySound(*paddleHitSound);
+            
+            if(ball->speed < ball->maxSpeed)
+                ball->speed += ball->speedIncreaseAmount;
+            
+            timeElapsed = 0.0f;
+        }
     }
     else if(ballPaddleCollision(rightPaddle, ball))
     {
-        float newAngle = mapRange2Range(0,
+        if(timeElapsed > speedIncreaseCooldown)
+        {
+            float const newAngle = mapRange2Range(0,
             rightPaddle->rect.height, -45, 45, ball->pos.y - rightPaddle->rect.y);
         
-        ball->direction.x = -cos(PI / 180 * newAngle);
-        ball->direction.y = sin(PI / 180 * newAngle);
-        ball->speed += ball->speedIncreaseAmount;
-        printf("RIGHT %f\n", newAngle);
-        
-        PlaySound(*paddleHitSound);
+            ball->direction.x = -cos(PI / 180 * newAngle);
+            ball->direction.y = sin(PI / 180 * newAngle);
+            
+            if(ball->speed < ball->maxSpeed)
+                ball->speed += ball->speedIncreaseAmount;
+            
+            PlaySound(*paddleHitSound);
+            printf("RIGHT %f\n", newAngle);
+            
+            timeElapsed = 0.0f;
+        }  
     }
     
     return 0;
