@@ -408,7 +408,7 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
         if(timeElapsed > speedIncreaseCooldown)
         {
             float const newAngle = mapRange2Range(0, 
-            leftPaddle->rect.height, -45, 45, ball->pos.y - leftPaddle->rect.y);
+            leftPaddle->rect.height, -55, 55, ball->pos.y - leftPaddle->rect.y);
         
             ball->direction.x = cos(PI / 180 * newAngle);
             ball->direction.y = sin(PI / 180 * newAngle);
@@ -416,8 +416,11 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
             PlaySound(*paddleHitSound);
             
             if(ball->speed < ball->maxSpeed)
-                ball->speed += ball->speedIncreaseAmount;
-            
+            {
+                ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
+                    ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
+            }
+
             timeElapsed = 0.0f;
         }
     }
@@ -426,13 +429,16 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
         if(timeElapsed > speedIncreaseCooldown)
         {
             float const newAngle = mapRange2Range(0,
-            rightPaddle->rect.height, -45, 45, ball->pos.y - rightPaddle->rect.y);
+            rightPaddle->rect.height, -55, 55, ball->pos.y - rightPaddle->rect.y);
         
             ball->direction.x = -cos(PI / 180 * newAngle);
             ball->direction.y = sin(PI / 180 * newAngle);
             
             if(ball->speed < ball->maxSpeed)
-                ball->speed += ball->speedIncreaseAmount;
+            {
+                ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
+                    ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
+            }
             
             PlaySound(*paddleHitSound);
             
