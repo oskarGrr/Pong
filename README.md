@@ -1,0 +1,2 @@
+to build: run the batch files to build for the default CMake generator (visual studio if on windows), and mingw respectively.
+I have not tested it on linux yet. You will of course need to change the batch scripts to shell scripts there, or just use cmake manually.
