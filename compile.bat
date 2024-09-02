@@ -1,1 +1,0 @@
-gcc main.c -o pong.exe -std=c17 -O3 -Wall -ID:\cStuff\raylib\raylib-5.0_win64_mingw-w64\include -LD:\cStuff\raylib\raylib-5.0_win64_mingw-w64\lib -lraylib -lopengl32 -lgdi32 -lwinmm -mthreads

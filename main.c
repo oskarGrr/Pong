@@ -386,18 +386,7 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
         resetBall(ball, screenW, screenH, mid2SideAngle);
         return -1;
     }
-
-    static float timeElapsed = 0.0f;
-    timeElapsed += dt;
-
-    //Wait 100 milliseconds before allowing another speed increase to the ball.
-    //This is needed because the ball sometimes gets pushed by the top or 
-    //bottom of the paddles (while the paddles are moving faster than the ball).
-    //The collision detection then keeps returning true and rapidly accelerates the ball
-    //causing it's speed to jump more than it should (ball->speedIncreaseAmount) from "one" paddle hit.
-    //I'm sure this is basically a hack to fix the problem, but it works pretty well.
-    float const speedIncreaseCooldown = 0.1f;
-
+    
     //if we hit the floor or ceil then flip the y direction
     if(ball->pos.y + ball->radius >= screenH || ball->pos.y - ball->radius <= 0)
     {
@@ -405,45 +394,35 @@ int updateBall(Ball* ball, int screenW, int screenH, float mid2SideAngle,
     }
     else if(ballPaddleCollision(leftPaddle, ball))
     {
-        if(timeElapsed > speedIncreaseCooldown)
-        {
-            float const newAngle = mapRange2Range(0, 
+        float const newAngle = mapRange2Range(0, 
             leftPaddle->rect.height, -55, 55, ball->pos.y - leftPaddle->rect.y);
         
-            ball->direction.x = cos(PI / 180 * newAngle);
-            ball->direction.y = sin(PI / 180 * newAngle);
-
-            PlaySound(*paddleHitSound);
-            
-            if(ball->speed < ball->maxSpeed)
-            {
-                ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
-                    ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
-            }
-
-            timeElapsed = 0.0f;
+        ball->direction.x = cos(PI / 180 * newAngle);
+        ball->direction.y = sin(PI / 180 * newAngle);
+        
+        PlaySound(*paddleHitSound);
+        
+        if(ball->speed < ball->maxSpeed)
+        {
+            ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
+                ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
         }
     }
     else if(ballPaddleCollision(rightPaddle, ball))
     {
-        if(timeElapsed > speedIncreaseCooldown)
-        {
-            float const newAngle = mapRange2Range(0,
+        float const newAngle = mapRange2Range(0,
             rightPaddle->rect.height, -55, 55, ball->pos.y - rightPaddle->rect.y);
         
-            ball->direction.x = -cos(PI / 180 * newAngle);
-            ball->direction.y = sin(PI / 180 * newAngle);
-            
-            if(ball->speed < ball->maxSpeed)
-            {
-                ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
-                    ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
-            }
-            
-            PlaySound(*paddleHitSound);
-            
-            timeElapsed = 0.0f;
-        }  
+        ball->direction.x = -cos(PI / 180 * newAngle);
+        ball->direction.y = sin(PI / 180 * newAngle);
+        
+        PlaySound(*paddleHitSound);
+        
+        if(ball->speed < ball->maxSpeed)
+        {
+            ball->speed += (ball->maxSpeed - ball->speed >= ball->speedIncreaseAmount) ? 
+                ball->speedIncreaseAmount : ball->maxSpeed - ball->speed;
+        }
     }
     
     return 0;

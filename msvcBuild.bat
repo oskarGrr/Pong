@@ -1,0 +1,1 @@
+cmake -S . -B VSBuild -DVCPKG_TARGET_ARCHITECTURE=x64

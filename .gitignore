@@ -1,1 +1,6 @@
 pong.exe
+VSBuild/
+vcpkg_installed/
+cmake_install.cmake 
+mingwBuild/
+
