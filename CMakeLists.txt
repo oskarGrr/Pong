@@ -14,14 +14,10 @@ else()
     )
 endif()
 
-set(PROJECT_NAME Pong)
-
-project(${PROJECT_NAME} LANGUAGES C)
+project(Pong LANGUAGES C)
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED True)
-
-#set(CMAKE_FIND_DEBUG_MODE True)
 
 find_package(raylib CONFIG REQUIRED)
 
